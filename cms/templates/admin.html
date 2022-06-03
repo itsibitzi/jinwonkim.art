@@ -1,0 +1,50 @@
+{% extends "common.html" %} {% block content %}
+<h1>Admin</h1>
+<div>
+  {% for category in categories %}
+  <form action="/admin/categories/delete" method="POST">
+    {{category.name}}
+    <input type="hidden" name="id" value="{{category.id}}" />
+    <button type="submit">Delete</button>
+  </form>
+  {% endfor %}
+  <form action="/admin/categories" method="POST">
+    <fieldset>
+      <legend>New Category</legend>
+      <div>
+        <label for="category_name">Name:</label>
+        <input id="category_name" type="text" placeholder="Name" name="name" />
+      </div>
+      <button type="submit">Submit</button>
+    </fieldset>
+  </form>
+  <hr />
+  <form action="/admin/images" method="POST" enctype="multipart/form-data">
+    <fieldset>
+      <legend>New Image</legend>
+      <div>
+        <label for="image_name">Name:</label>
+        <input id="image_name" type="text" placeholder="Name" name="name" />
+      </div>
+      <div>
+        <label>Categories:</label>
+        {% for category in categories %}
+        <div>{{category.name}}</div>
+        {% endfor %}
+      </div>
+      <div>
+        <label for="img">Select image:</label>
+        <input type="file" id="img" name="img" accept="image/*" />
+      </div>
+      <button type="submit">Submit</button>
+    </fieldset>
+  </form>
+</div>
+<hr />
+<div>
+  {% for image in images %}
+  <div>{{image.name}}</div>
+  <img src="/images/{{image.filename}}" />
+  {% endfor %}
+</div>
+{% endblock content %}
