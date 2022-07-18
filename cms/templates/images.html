@@ -1,2 +1,9 @@
-{% extends "common.html" %} {% block content %} hello from {{where}} {% endblock
-content %}
+{% import "macros.html" as imageMacros %}
+{% extends "common.html" %} {% block content %}
+{% include "header.html" %}
+
+<main>
+    {{ imageMacros::image(name=image.name, description=image.description, src=image.filename) }}
+</main>
+
+{% endblock content %}

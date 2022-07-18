@@ -1,0 +1,16 @@
+{% extends "common.html" %} {% block content %}
+{% include "header.html" %}
+
+<main>
+    <h2>Frequently Asked Questions</h2>
+    <br />
+    <div style="max-width: 60em">
+        {% for faq in faqs %}
+        <strong>{{faq.question}}</strong>
+        <div style="white-space: pre">{{faq.answer}}</div>
+        <br />
+        {% endfor %}
+    </div>
+</main>
+
+{% endblock content %}

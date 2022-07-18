@@ -1,0 +1,40 @@
+.showcase {
+    width: auto;
+    height: 90vh;
+}
+
+.showcase-main-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 140px);
+}
+
+@media only screen and (max-width: 600px) {
+    .showcase-main-container {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.showcase-image-wrapper {
+    flex-grow: 1;
+    box-sizing: border-box;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.showcase-text {
+    padding-left: 32px;
+    min-width: 24em;
+}
+
+.showcase-title {
+    font-weight: bold;
+    margin-top: 16px;
+    margin-bottom: 32px;
+}
+
+.showcase-details {
+    width: 200px;
+    height: 200px;
+}

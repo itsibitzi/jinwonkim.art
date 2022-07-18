@@ -1,0 +1,14 @@
+<header>
+    <div>
+        Jinwon Kim
+    </div>
+    <nav>
+        <a {% if current_page=="home" %} data-selected {% endif %} href="/">Home</a> |
+        {% for category in categories %}
+        <a {% if current_page==category.id %} data-selected {% endif %}
+            href="/categories/{{category.id}}">{{category.name}}</a> |
+        {% endfor %}
+        <a {% if current_page=="faq" %} data-selected {% endif %} href="/faq">FAQ</a> |
+        <a {% if current_page=="about" %} data-selected {% endif %} href="/about">About</a>
+    </nav>
+</header>

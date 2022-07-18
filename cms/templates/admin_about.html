@@ -1,0 +1,25 @@
+{% extends "common.html" %} {% block content %}
+
+{% include "admin_header.html" %}
+<style>
+    input:not([type="checkbox"]),
+    textarea {
+        display: block;
+    }
+
+    textarea {
+        resize: none;
+    }
+</style>
+<div>
+    <form action="/admin/about" method="POST">
+        <fieldset>
+            <legend>Set About</legend>
+            <div>
+                <textarea placeholder="{{about}}" name="about" cols="80" rows="15"></textarea>
+            </div>
+            <button type="submit">Submit</button>
+        </fieldset>
+    </form>
+</div>
+{% endblock content %}

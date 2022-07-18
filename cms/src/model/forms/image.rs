@@ -1,10 +1,12 @@
 use axum::{body::Bytes, extract::Multipart};
+use serde::Deserialize;
 
 use crate::model::error::Error;
 
 // Parsed from multipart form data
 pub struct CreateImage {
     pub name: String,
+    pub description: String,
     pub categories: Vec<String>,
     pub img: Bytes,
     pub img_name: String,
@@ -13,6 +15,7 @@ pub struct CreateImage {
 impl CreateImage {
     pub async fn from_multipart(mut payload: Multipart) -> Result<CreateImage, Error> {
         let mut name: Option<String> = None;
+        let mut description: Option<String> = None;
         let mut categories: Vec<String> = vec![];
         let mut img_name: Option<String> = None;
         let mut img: Option<Bytes> = None;
@@ -26,8 +29,12 @@ impl CreateImage {
                 "name" => {
                     name = Some(field.text().await?);
                 }
+                "description" => {
+                    description = Some(field.text().await?);
+                }
                 "category" => {
                     let category_id = field.text().await?;
+                    println!("GOT CATEGORY!!!! {}", category_id);
                     categories.push(category_id);
                 }
                 "img" => {
@@ -43,16 +50,23 @@ impl CreateImage {
             }
         }
 
-        match (name, img, img_name) {
-            (Some(name), Some(img), Some(img_name)) => Ok(CreateImage {
+        match (name, description, img, img_name) {
+            (Some(name), Some(description), Some(img), Some(img_name)) => Ok(CreateImage {
                 name,
+                description,
                 categories,
                 img,
                 img_name,
             }),
             _ => Err(Error::IllegalStateError(
-                "Missing fields, either name or img",
+                "Missing fields, either name, description or img",
             )),
         }
     }
+}
+
+
+#[derive(Deserialize)]
+pub struct DeleteImage {
+    pub id: i64,
 }

@@ -7,19 +7,24 @@ mod services;
 use std::net::SocketAddr;
 
 use axum::{
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, get_service, post},
+    routing::{get, post},
     Extension, Router,
 };
 use model::error::Error;
 use tera::Tera;
-use tower_http::services::ServeDir;
 use tracing::info;
 
 use controllers::*;
 
-use crate::services::{database::Database, image_store::ImageStore};
+use crate::{
+    controllers::{
+        about::{get_admin_about_page, post_about},
+        category::{delete_category, get_admin_category_page, post_category},
+        faq::{delete_faq, get_admin_faq_page, post_faq},
+        image::{delete_image, get_admin_images_page, post_image},
+    },
+    services::{database::Database, static_files::StaticFiles},
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -31,7 +36,7 @@ async fn main() -> Result<(), Error> {
 
     let tera = Tera::new("templates/*").unwrap();
 
-    let image_store = ImageStore::new("images");
+    let static_files = StaticFiles::new();
 
     info!(
         "Found templates: {}",
@@ -39,17 +44,28 @@ async fn main() -> Result<(), Error> {
     );
 
     let app = Router::new()
+        // Normal
+        .route("/", get(get_home_page))
+        .route("/faq", get(get_faq_page))
+        .route("/about", get(get_about_page))
+        .route("/categories/:category", get(get_category_page))
+        .route("/images/:image", get(get_image_page))
+        .route("/assets/:filename", get(serve_image))
+        .route("/styles/:filename", get(serve_styles))
+        // Admin stuff
         .route("/admin", get(get_admin_page))
-        .route("/admin/categories", post(post_category))
-        .route("/admin/categories/delete", post(delete_category))
-        .route("/admin/images", post(post_image))
-        .route("/categories", get(get_categories))
         .route(
-            "/images/*",
-            get_service(ServeDir::new("images/")).handle_error(handle_error),
+            "/admin/categories",
+            get(get_admin_category_page).post(post_category),
         )
+        .route("/admin/categories/delete", post(delete_category))
+        .route("/admin/images", get(get_admin_images_page).post(post_image))
+        .route("/admin/images/delete", post(delete_image))
+        .route("/admin/about", get(get_admin_about_page).post(post_about))
+        .route("/admin/faq", get(get_admin_faq_page).post(post_faq))
+        .route("/admin/faq/delete", post(delete_faq))
         .layer(Extension(tera))
-        .layer(Extension(image_store))
+        .layer(Extension(static_files))
         .layer(Extension(db));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -61,8 +77,4 @@ async fn main() -> Result<(), Error> {
         .unwrap();
 
     Ok(())
-}
-
-async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
-    (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }

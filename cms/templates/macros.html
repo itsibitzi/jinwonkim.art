@@ -1,0 +1,22 @@
+{% macro image(name, description, src) %}
+
+<div class="showcase-main-container">
+    <div class="showcase-image-wrapper" style="background-image: url('/assets/{{src}}')" role='img'></div>
+
+    <div class="showcase-text">
+        <p class="showcase-title">{{ name }}</p>
+        <p>{{ description }} </p>
+    </div>
+</div>
+
+{% endmacro image %}
+
+{% macro grid_image(id, name, description, src) %}
+
+<div class="grid-image-container">
+    <a href="/images/{{id}}">
+        <img src='/assets/{{src}}' />
+    </a>
+</div>
+
+{% endmacro image %}

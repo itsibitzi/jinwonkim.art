@@ -1,2 +1,4 @@
+pub mod auth;
 pub mod database;
-pub mod image_store;
+pub mod password;
+pub mod static_files;

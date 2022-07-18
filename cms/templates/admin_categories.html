@@ -1,0 +1,42 @@
+{% extends "common.html" %} {% block content %}
+
+{% include "admin_header.html" %}
+<style>
+    input:not([type="checkbox"]),
+    textarea {
+        display: block;
+    }
+
+    textarea {
+        resize: none;
+    }
+</style>
+<div>
+    <form action="/admin/categories" method="POST">
+        <fieldset>
+            <legend>New Category</legend>
+            <div>
+                <label for="category_name">Name:</label>
+                <input id="category_name" type="text" placeholder="Name" name="name" />
+            </div>
+            <button type="submit">Submit</button>
+        </fieldset>
+    </form>
+    <hr />
+    <table>
+        {% for category in categories %}
+        <tr>
+            <td>
+                {{category.name}}
+            </td>
+            <td>
+                <form action="/admin/categories/delete" method="POST">
+                    <input type="hidden" name="id" value="{{category.id}}" />
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock content %}

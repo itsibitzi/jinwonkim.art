@@ -6,7 +6,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("IO")]
+    #[error(transparent)]
     IO(#[from] io::Error),
     #[error("Unknown database error")]
     UnknownDatabaseError(#[from] sqlx::Error),
@@ -16,6 +16,10 @@ pub enum Error {
     IllegalStateError(&'static str),
     #[error("Multipart error")]
     MultipartError(#[from] MultipartError),
+    #[error("Invalid path")]
+    InvalidPath,
+    #[error("Invalid file base")]
+    InvalidBaseDirectory,
 }
 
 impl Into<(StatusCode, String)> for Error {
@@ -27,6 +31,10 @@ impl Into<(StatusCode, String)> for Error {
             Self::Migration(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Migration error".into()),
             Self::MultipartError(_) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Multipart error".into())
+            }
+            Self::InvalidPath => (StatusCode::BAD_REQUEST, "invalid path".into()),
+            Self::InvalidBaseDirectory => {
+                (StatusCode::BAD_REQUEST, "invalid base directory".into())
             }
         }
     }

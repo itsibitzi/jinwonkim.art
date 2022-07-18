@@ -1,17 +1,6 @@
 {% extends "common.html" %} {% block content %}
 
-<header>
-  <div>
-    Admin
-  </div>
-  <nav>
-    <a href="/admin">Home</a> |
-    <a href="/admin/categories">Manage Categories</a> |
-    <a href="/admin/images">Manage Images</a> |
-    <a href="/admin/faq">Manage FAQ</a> |
-    <a href="/admin/about">Manage About</a>
-  </nav>
-</header>
+{% include "admin_header.html" %}
 <style>
   input:not([type="checkbox"]),
   textarea {
@@ -23,24 +12,6 @@
   }
 </style>
 <div>
-  {% for category in categories %}
-  <form action="/admin/categories/delete" method="POST">
-    {{category.name}}
-    <input type="hidden" name="id" value="{{category.id}}" />
-    <button type="submit">Delete</button>
-  </form>
-  {% endfor %}
-  <form action="/admin/categories" method="POST">
-    <fieldset>
-      <legend>New Category</legend>
-      <div>
-        <label for="category_name">Name:</label>
-        <input id="category_name" type="text" placeholder="Name" name="name" />
-      </div>
-      <button type="submit">Submit</button>
-    </fieldset>
-  </form>
-  <hr />
   <form action="/admin/images" method="POST" enctype="multipart/form-data">
     <fieldset>
       <legend>New Image</legend>
@@ -73,14 +44,24 @@
 <hr />
 <div>
   {% for image in images %}
-  <div>{{image.name}}</div>
+  <div style="display:flex;flex-direction:row">
+    <h3>{{image.name}}</h3>
+    <div style="margin-left:15px">
+      <form action="/admin/images/delete" method="POST">
+        <input type="hidden" name="id" value="{{image.id}}" />
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+  </div>
   <div><em>{{image.description}}</em></div>
+  <label>Categories:</label>
   <ul>
     {% for category in image.categories %}
     <li>{{category.name}}</li>
     {% endfor %}
   </ul>
   <img style="width: 400px;" src="/images/{{image.filename}}" />
+  <hr />
   {% endfor %}
 </div>
 {% endblock content %}
