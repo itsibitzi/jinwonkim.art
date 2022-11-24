@@ -27,7 +27,3 @@ header {
 main {
   margin-top: 32px;
 }
-
-.header-selected {
-  color: var(--color-normal);
-}

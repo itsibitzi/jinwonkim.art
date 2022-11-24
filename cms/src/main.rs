@@ -49,7 +49,7 @@ async fn main() -> Result<(), Error> {
         .route("/faq", get(get_faq_page))
         .route("/about", get(get_about_page))
         .route("/categories/:category", get(get_category_page))
-        .route("/images/:image", get(get_image_page))
+        .route("/art/:image", get(get_image_page))
         .route("/assets/:filename", get(serve_image))
         .route("/styles/:filename", get(serve_styles))
         // Admin stuff

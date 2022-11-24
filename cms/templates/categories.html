@@ -2,10 +2,11 @@
 {% extends "common.html" %} {% block content %}
 {% include "header.html" %}
 <main>
-    <h2>{{category_display}}</h2>
-    {% for image in images %}
-    {{ imageMacros::grid_image(id=image.id, name=image.name, description=image.description, src=image.filename) }}
-    {% endfor %}
+    <div class="grid">
+        {% for image in images %}
+        {{ imageMacros::grid_image(id=image.id, name=image.name, description=image.description, src=image.filename) }}
+        {% endfor %}
+    </div>
 </main>
 
 {% endblock content %}

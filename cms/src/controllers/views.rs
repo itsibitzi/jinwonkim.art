@@ -39,14 +39,7 @@ pub async fn get_category_page(
         .map_err(|e| e.into())?;
     let categories = db.list_categories().await.map_err(|e| e.into())?;
 
-    let category_display = categories
-        .iter()
-        .find(|c| c.id == category)
-        .map(|c| c.name.to_owned())
-        .unwrap_or_else(|| category.clone());
-
     ctx.insert("current_page", &category);
-    ctx.insert("category_display", &category_display);
     ctx.insert("categories", &categories);
     ctx.insert("images", &images);
 
