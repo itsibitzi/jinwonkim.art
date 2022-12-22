@@ -1,0 +1,43 @@
+{% extends "common.html" %} {% block content %}
+
+{% include "admin_header.html" %}
+<style>
+    input:not([type="checkbox"]),
+    textarea {
+      display: block;
+    }
+  
+    textarea {
+      resize: none;
+    }
+</style>
+<form action="/admin/images/update" method="POST" enctype="multipart/form-data">
+    <fieldset>
+      <legend>{{image.name}}</legend>
+      <div>
+        <label for="image_name">Name:</label>
+        <input id="image_name" type="text" value="{{image.name}}" name="name" />
+      </div>
+      <div>
+        <label for="image_description">Description:</label>
+        <textarea id="image_description" type="text" placeholder="{{image.description}}"
+          name="description" cols="80">{{image.description}}</textarea>
+      </div>
+      <div>
+        <label>Categories:</label>
+        {% for category in categories %}
+        <div>
+          <input type="checkbox" id="c_{{category.id}}" name="category" value="{{category.id}}" {% if category.checked %} checked {% endif %}>
+          <label for="c_{{category.id}}">{{category.name}}</label><br>
+        </div>
+        {% endfor %}
+      </div>
+      <div>
+        <img style="width: 400px;" src="/assets/{{image.filename}}" />
+      </div>
+      <input type="hidden" name="id" value="{{image.id}}" />
+      <button type="submit">Submit</button>
+    </fieldset>
+  </form>
+
+{% endblock content %}

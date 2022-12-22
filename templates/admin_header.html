@@ -1,0 +1,11 @@
+<header>
+    <div>
+        Admin
+    </div>
+    <nav>
+        <a {% if current_page=="categories" %} data-selected {% endif %} href="/admin/categories">Manage Categories</a> |
+        <a {% if current_page=="images" %} data-selected {% endif %} href="/admin/images">Manage Images</a> |
+        <a {% if current_page=="faq" %} data-selected {% endif %} href="/admin/faq">Manage FAQ</a> |
+        <a {% if current_page=="about" %} data-selected {% endif %} href="/admin/about">Manage About</a>
+    </nav>
+</header>
