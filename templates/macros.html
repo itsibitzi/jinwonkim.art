@@ -13,10 +13,10 @@
 
 {% macro grid_image(id, name, description, src) %}
 
-<div class="grid-image-container">
-    <a href="/art/{{id}}">
-        <img src='/assets/{{src}}' />
-    </a>
-</div>
+<a href="/art/{{id}}">
+    <div class="grid-image-container">
+            <img src='/assets/{{src}}' />
+    </div>
+</a>
 
 {% endmacro image %}

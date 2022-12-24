@@ -44,7 +44,7 @@ impl Database {
             Ok(())
         } else {
             Err(Error::IllegalStateError(
-                "Must use English characters only in name",
+                "Must use English alphabetic characters only in name",
             ))
         }
     }
