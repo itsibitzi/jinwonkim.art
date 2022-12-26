@@ -10,6 +10,12 @@
     textarea {
         resize: none;
     }
+
+    .faq-controls {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+    }
 </style>
 <div>
     <form action="/admin/faq" method="POST">
@@ -30,19 +36,29 @@
     <table>
         {% for faq in faqs %}
         <tr>
-            <td>
+            <td class="faq-controls">
                 <strong>
                     {{faq.question}}
                 </strong>
-            </td>
-            <td>
-                {{faq.answer}}
-            </td>
-            <td>
-                <form action="/admin/faq/delete" method="POST">
+                <form action="/admin/faq/move" method="POST">
+                    <input type="hidden" name="id" value="{{faq.id}}" />
+                    <input type="hidden" name="up" value="true" />
+                    <button type="submit">⬆️</button>
+                </form>
+                <form action="/admin/faq/move" method="POST">
+                    <input type="hidden" name="id" value="{{faq.id}}" />
+                    <input type="hidden" name="up" value="false" />
+                    <button type="submit">⬇️</button>
+                </form>
+                <form action="/admin/faq/delete" method="POST" onsubmit="return confirm('Do you really want to delete this FAQ item?');">
                     <input type="hidden" name="id" value="{{faq.id}}" />
                     <button type="submit">Delete</button>
                 </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {{faq.answer}}
             </td>
         </tr>
         {% endfor %}

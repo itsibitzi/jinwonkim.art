@@ -119,3 +119,9 @@ impl UpdateImage {
 pub struct DeleteImage {
     pub id: i64,
 }
+
+#[derive(Deserialize)]
+pub struct MoveImage {
+    pub id: i64,
+    pub up: bool,
+}

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Form},
+    extract::Form,
     http::StatusCode,
     response::{Html, IntoResponse, Redirect},
     Extension,
@@ -7,9 +7,7 @@ use axum::{
 use tera::{Context, Tera};
 
 use crate::{
-    model::forms::{
-        faq::{CreateFaq, DeleteFaq},
-    },
+    model::forms::faq::{CreateFaq, DeleteFaq, MoveFaq},
     services::{
         auth::{check_password_for_user, AuthBasic},
         database::Database,
@@ -49,6 +47,22 @@ pub async fn post_faq(
         Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
     }
 }
+
+pub async fn move_faq(
+    AuthBasic((username, password)): AuthBasic,
+    Form(payload): Form<MoveFaq>,
+    Extension(db): Extension<Database>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if check_password_for_user(&username, &password, &db).await {
+        db.move_faq(payload.id, payload.up)
+            .await
+            .map(|_| Redirect::to("/admin/faq"))
+            .map_err(|e| e.into())
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
+    }
+}
+
 pub async fn delete_faq(
     AuthBasic((username, password)): AuthBasic,
     Form(payload): Form<DeleteFaq>,

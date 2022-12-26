@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     model::{
         category::ImageCategory,
-        forms::image::{CreateImage, DeleteImage, UpdateImage},
+        forms::image::{CreateImage, DeleteImage, MoveImage, UpdateImage},
     },
     services::{
         auth::{check_password_for_user, AuthBasic},
@@ -142,6 +142,20 @@ pub async fn put_image(
         .await
         .map(|_| Redirect::to("/admin/images"))
         .map_err(|e| e.into())
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
+    }
+}
+pub async fn move_image(
+    AuthBasic((username, password)): AuthBasic,
+    Form(payload): Form<MoveImage>,
+    Extension(db): Extension<Database>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if check_password_for_user(&username, &password, &db).await {
+        db.move_image(payload.id, payload.up)
+            .await
+            .map(|_| Redirect::to("/admin/images"))
+            .map_err(|e| e.into())
     } else {
         Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
     }

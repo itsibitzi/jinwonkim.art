@@ -1,8 +1,8 @@
 use sqlx::SqlitePool;
 
 use crate::model::{
-    about::About, category::Category, error::Error, faq::Faq, forms::faq::CreateFaq, image::Image,
-    user::User,
+    about::About, category::Category, db::IdAndPosition, error::Error, faq::Faq,
+    forms::faq::CreateFaq, image::Image, user::User,
 };
 
 #[derive(Clone)]
@@ -32,9 +32,7 @@ impl Database {
         if name_valid {
             let id = name.to_lowercase().replace(" ", "-");
             sqlx::query!(
-                r#"
-                INSERT INTO categories (id, name) VALUES (?1, ?2)
-                "#,
+                "INSERT INTO categories (id, name) VALUES (?1, ?2)",
                 id,
                 name
             )
@@ -52,14 +50,9 @@ impl Database {
     pub async fn delete_category(&self, id: &str) -> Result<(), Error> {
         let mut conn = self.pool.acquire().await?;
 
-        sqlx::query!(
-            r#"
-                DELETE FROM categories WHERE id = ?1
-            "#,
-            id
-        )
-        .execute(&mut conn)
-        .await?;
+        sqlx::query!("DELETE FROM categories WHERE id = ?1", id)
+            .execute(&mut conn)
+            .await?;
 
         Ok(())
     }
@@ -67,9 +60,7 @@ impl Database {
     pub async fn list_categories(&self) -> Result<Vec<Category>, Error> {
         let categories = sqlx::query_as!(
             Category,
-            r#"
-            SELECT id, name FROM categories
-            "#
+            "SELECT id, name FROM categories ORDER BY name ASC"
         )
         .fetch_all(&self.pool)
         .await?;
@@ -91,9 +82,7 @@ impl Database {
         let filename = filename.trim();
 
         let image_id = sqlx::query!(
-            r#"
-            INSERT INTO images (name, description, filename) VALUES (?1, ?2, ?3)
-            "#,
+            "INSERT INTO images (name, description, filename) VALUES (?1, ?2, ?3)",
             name,
             description,
             filename
@@ -104,9 +93,7 @@ impl Database {
 
         for category_id in categories {
             sqlx::query!(
-                r#"
-                INSERT INTO category_images (category_id, image_id) VALUES (?1, ?2)
-            "#,
+                "INSERT INTO category_images (category_id, image_id) VALUES (?1, ?2)",
                 category_id,
                 image_id
             )
@@ -177,6 +164,7 @@ impl Database {
             FROM images
             LEFT OUTER JOIN category_images ON category_images.image_id = images.id
             LEFT OUTER JOIN categories ON category_images.category_id = categories.id
+            ORDER BY position ASC
             "#
         )
         .fetch_all(&self.pool)
@@ -221,6 +209,7 @@ impl Database {
             LEFT OUTER JOIN category_images ON category_images.image_id = images.id
             LEFT OUTER JOIN categories ON category_images.category_id = categories.id
             WHERE categories.id = ?1
+            ORDER BY position ASC
             "#,
             category
         )
@@ -292,7 +281,6 @@ impl Database {
             })
             .collect();
 
-        println!("---------A");
         if images.len() > 0 {
             Ok(Some(images.remove(0)))
         } else {
@@ -349,9 +337,7 @@ impl Database {
         let answer = faq.answer.trim();
 
         sqlx::query!(
-            r#"
-                INSERT INTO faqs (question, answer) VALUES (?1, ?2)
-                "#,
+            "INSERT INTO faqs (question, answer) VALUES (?1, ?2)",
             question,
             answer
         )
@@ -365,7 +351,9 @@ impl Database {
         let faqs = sqlx::query_as!(
             Faq,
             r#"
-            SELECT id, question, answer FROM faqs
+            SELECT id, question, answer 
+            FROM faqs
+            ORDER BY position ASC
             "#
         )
         .fetch_all(&self.pool)
@@ -374,17 +362,128 @@ impl Database {
         Ok(faqs)
     }
 
+    pub async fn move_image(&self, id: i64, up: bool) -> Result<(), Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let image = sqlx::query_as!(
+            IdAndPosition,
+            r#"SELECT id, position AS "position!" FROM images WHERE id = ?1"#,
+            id
+        )
+        .fetch_one(&mut tx)
+        .await?;
+
+        let swap_image = if up {
+            sqlx::query_as!(
+                IdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM images 
+                WHERE position < ?1 
+                ORDER BY position DESC"#,
+                image.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        } else {
+            sqlx::query_as!(
+                IdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM images 
+                WHERE position > ?1 
+                ORDER BY position ASC"#,
+                image.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        };
+
+        sqlx::query!(
+            "UPDATE images SET position = ?1 WHERE id = ?2",
+            image.position,
+            swap_image.id
+        )
+        .execute(&mut tx)
+        .await?;
+        sqlx::query!(
+            "UPDATE images SET position = ?1 WHERE id = ?2",
+            swap_image.position,
+            image.id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn move_faq(&self, id: i64, up: bool) -> Result<(), Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let faq = sqlx::query_as!(
+            IdAndPosition,
+            r#"SELECT id, position AS "position!" FROM faqs WHERE id = ?1"#,
+            id
+        )
+        .fetch_one(&mut tx)
+        .await?;
+
+        let swap_faq = if up {
+            sqlx::query_as!(
+                IdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM faqs 
+                WHERE position < ?1 
+                ORDER BY position DESC"#,
+                faq.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        } else {
+            sqlx::query_as!(
+                IdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM faqs 
+                WHERE position > ?1 
+                ORDER BY position ASC"#,
+                faq.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        };
+
+        sqlx::query!(
+            "UPDATE faqs SET position = ?1 WHERE id = ?2",
+            faq.position,
+            swap_faq.id
+        )
+        .execute(&mut tx)
+        .await?;
+        sqlx::query!(
+            "UPDATE faqs SET position = ?1 WHERE id = ?2",
+            swap_faq.position,
+            faq.id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+        Ok(())
+    }
+
     pub async fn delete_image(&self, id: i64) -> Result<(), Error> {
         let mut conn = self.pool.acquire().await?;
 
-        sqlx::query!(
-            r#"
-            DELETE FROM images WHERE id = ?1
-        "#,
-            id
-        )
-        .execute(&mut conn)
-        .await?;
+        sqlx::query!("DELETE FROM images WHERE id = ?1", id)
+            .execute(&mut conn)
+            .await?;
 
         Ok(())
     }

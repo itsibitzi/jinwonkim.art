@@ -1,8 +1,8 @@
 mkdir -p build/images
 
 # Code...
-cargo build --release
-cp target/release/cms build/cms
+# cargo build --release
+# cp target/release/cms build/cms
 
 # Empty DB...
 echo "VACUUM;" | sqlite3 build/jinwonkim.db

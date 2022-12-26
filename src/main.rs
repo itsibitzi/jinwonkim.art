@@ -20,9 +20,10 @@ use crate::{
     controllers::{
         about::{get_admin_about_page, post_about},
         category::{delete_category, get_admin_category_page, post_category},
-        faq::{delete_faq, get_admin_faq_page, post_faq},
+        faq::{delete_faq, get_admin_faq_page, move_faq, post_faq},
         image::{
-            delete_image, get_admin_edit_image_page, get_admin_images_page, post_image, put_image,
+            delete_image, get_admin_edit_image_page, get_admin_images_page, move_image, post_image,
+            put_image,
         },
     },
     services::{database::Database, static_files::StaticFiles},
@@ -65,9 +66,11 @@ async fn main() -> Result<(), Error> {
         .route("/admin/images/edit/:image", get(get_admin_edit_image_page))
         .route("/admin/images/delete", post(delete_image))
         .route("/admin/images/update", post(put_image))
+        .route("/admin/images/move", post(move_image))
         .route("/admin/about", get(get_admin_about_page).post(post_about))
         .route("/admin/faq", get(get_admin_faq_page).post(post_faq))
         .route("/admin/faq/delete", post(delete_faq))
+        .route("/admin/faq/move", post(move_faq))
         .layer(Extension(tera))
         .layer(Extension(static_files))
         .layer(Extension(db));
