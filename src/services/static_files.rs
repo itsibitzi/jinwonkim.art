@@ -8,16 +8,19 @@ use crate::model::error::Error;
 #[derive(Clone)]
 pub struct StaticFiles {
     image_root: PathBuf,
+    thumbs_root: PathBuf,
     styles_root: PathBuf,
 }
 
 impl StaticFiles {
     pub fn new() -> Self {
         let image_root = PathBuf::from("images").canonicalize().unwrap();
+        let thumbs_root = PathBuf::from("thumbs").canonicalize().unwrap();
         let styles_root = PathBuf::from("styles").canonicalize().unwrap();
 
         StaticFiles {
             image_root,
+            thumbs_root,
             styles_root,
         }
     }
@@ -52,6 +55,8 @@ impl StaticFiles {
 
         let base = if path.starts_with("images") {
             &self.image_root
+        } else if path.starts_with("thumbs") {
+            &self.thumbs_root
         } else if path.starts_with("styles") {
             &self.styles_root
         } else {

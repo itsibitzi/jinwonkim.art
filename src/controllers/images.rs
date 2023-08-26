@@ -6,6 +6,7 @@ use axum::{
     response::IntoResponse,
     Extension,
 };
+use tracing::info;
 
 use crate::services::static_files::StaticFiles;
 
@@ -15,6 +16,21 @@ pub async fn serve_image(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let mut path = PathBuf::from("images");
     path.push(&filename);
+
+    info!("Getting image {}", path.display());
+
+    let file = static_files.get_file(&path).await.map_err(|e| e.into())?;
+    Ok(([(CONTENT_TYPE, "image/jpeg")], file))
+}
+
+pub async fn serve_thumb(
+    Path(filename): Path<String>,
+    Extension(static_files): Extension<StaticFiles>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let mut path = PathBuf::from("thumbs");
+    path.push(&filename);
+
+    info!("Getting thumb {}", path.display());
 
     let file = static_files.get_file(&path).await.map_err(|e| e.into())?;
     Ok(([(CONTENT_TYPE, "image/jpeg")], file))

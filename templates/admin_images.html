@@ -10,6 +10,9 @@
   textarea {
     resize: none;
   }
+  fieldset > div {
+    margin-bottom: 10px;
+  }
 </style>
 <div>
   <form action="/admin/images" method="POST" enctype="multipart/form-data">
@@ -37,6 +40,11 @@
         <label for="img">Select image:</label>
         <input type="file" id="img" name="img" accept="image/*" />
       </div>
+      <p>
+        <small>
+          Note: When you press submit there will be a small delay as the server generates a high quality thumbnail.
+        </small>
+      </p>
       <button type="submit">Submit</button>
     </fieldset>
   </form>
