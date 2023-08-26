@@ -18,8 +18,6 @@ pub enum Error {
     MultipartError(#[from] MultipartError),
     #[error("Invalid path")]
     InvalidPath,
-    #[error("Invalid file base")]
-    InvalidBaseDirectory,
 }
 
 impl Into<(StatusCode, String)> for Error {
@@ -33,9 +31,6 @@ impl Into<(StatusCode, String)> for Error {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Multipart error".into())
             }
             Self::InvalidPath => (StatusCode::BAD_REQUEST, "invalid path".into()),
-            Self::InvalidBaseDirectory => {
-                (StatusCode::BAD_REQUEST, "invalid base directory".into())
-            }
         }
     }
 }

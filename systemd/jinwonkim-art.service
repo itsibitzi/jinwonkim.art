@@ -1,0 +1,11 @@
+[Unit]
+Description=Jinwon Kim art 
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/jinwonkim-art --root-dir /opt/jinwonkim.art
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

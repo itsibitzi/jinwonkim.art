@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use axum::{
     extract::Path,
     http::{header::CONTENT_TYPE, StatusCode},
@@ -98,9 +96,10 @@ pub async fn serve_styles(
     Path(filename): Path<String>,
     Extension(static_files): Extension<StaticFiles>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let mut path = PathBuf::from("styles");
-    path.push(&filename);
-    let file = static_files.get_file(&path).await.map_err(|e| e.into())?;
+    let file = static_files
+        .get_style(&filename)
+        .await
+        .map_err(|e| e.into())?;
 
     Ok(([(CONTENT_TYPE, "text/css")], file))
 }

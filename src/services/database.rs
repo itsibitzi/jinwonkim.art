@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use sqlx::SqlitePool;
 
 use crate::model::{
@@ -11,8 +13,9 @@ pub struct Database {
 }
 
 impl Database {
-    pub async fn new() -> Result<Database, sqlx::Error> {
-        let pool = SqlitePool::connect("jinwonkim.db").await?;
+    pub async fn new(db_path: impl AsRef<Path>) -> Result<Database, sqlx::Error> {
+        let db_path = db_path.as_ref().join("jinwonkim.db").display().to_string();
+        let pool = SqlitePool::connect(&db_path).await?;
 
         Ok(Database { pool })
     }
@@ -30,7 +33,7 @@ impl Database {
             && name != "about";
 
         if name_valid {
-            let id = name.to_lowercase().replace(" ", "-");
+            let id = name.to_lowercase().replace(' ', "-");
             sqlx::query!(
                 "INSERT INTO categories (id, name) VALUES (?1, ?2)",
                 id,
@@ -281,7 +284,7 @@ impl Database {
             })
             .collect();
 
-        if images.len() > 0 {
+        if !images.is_empty() {
             Ok(Some(images.remove(0)))
         } else {
             Ok(None)

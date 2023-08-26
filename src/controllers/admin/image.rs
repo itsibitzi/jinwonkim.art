@@ -64,7 +64,7 @@ pub async fn get_admin_edit_image_page(
             .into_iter()
             .map(|c| {
                 let checked = image.categories.iter().any(|ic| ic.id == c.id);
-                c.to_image_category(checked)
+                c.into_image_category(checked)
             })
             .collect();
 

@@ -1,22 +1,26 @@
 #![feature(slice_group_by)]
 
+mod cli;
 mod controllers;
 mod model;
 mod services;
 
-use std::net::SocketAddr;
+use std::{env, net::SocketAddr};
 
 use axum::{
     routing::{get, post},
     Extension, Router,
 };
+use clap::Parser;
 use model::error::Error;
 use tera::Tera;
 use tracing::info;
 
 use controllers::*;
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
+    cli::Cli,
     controllers::{
         about::{get_admin_about_page, post_about},
         category::{delete_category, get_admin_category_page, post_category},
@@ -31,15 +35,18 @@ use crate::{
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt::init();
+    setup_tracing();
+
+    let cli = Cli::parse();
 
     info!("Starting database...");
-    let db = Database::new().await?;
+    let db = Database::new(&cli.root_dir).await?;
     db.migrate().await?;
 
-    let tera = Tera::new("templates/*").unwrap();
+    let templates = cli.root_dir.join("templates").display().to_string() + "/*";
+    let tera = Tera::new(&templates).unwrap();
 
-    let static_files = StaticFiles::new();
+    let static_files = StaticFiles::new(cli.root_dir);
 
     info!(
         "Found templates: {}",
@@ -84,4 +91,21 @@ async fn main() -> Result<(), Error> {
         .unwrap();
 
     Ok(())
+}
+
+fn setup_tracing() {
+    if env::var_os("RUST_LOG").is_none() {
+        env::set_var("RUST_LOG", "jinwonkim_art=debug");
+    }
+
+    let subscriber = tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::Layer::new().with_writer(std::io::stdout))
+        .with(EnvFilter::from_default_env());
+
+    tracing::subscriber::set_global_default(subscriber).expect("Unable to set global subscriber");
+
+    let rust_log = env::var_os("RUST_LOG").unwrap_or("***ENV VAR NOT SET***".into());
+
+    println!("{:?}", rust_log);
+    tracing::info!("Setup logging with: {:?}", rust_log);
 }

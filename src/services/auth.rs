@@ -42,8 +42,8 @@ where
         // Check that its a well-formed basic auth then decode and return
         let split = authorisation.split_once(' ');
         match split {
-            Some((name, contents)) if name == "Basic" => {
-                const ERR: (StatusCode, &'static str) = (
+            Some(("Basic", contents)) => {
+                const ERR: (StatusCode, &str) = (
                     StatusCode::BAD_REQUEST,
                     "`Authorization` header's basic authentication was improperly encoded",
                 );
@@ -69,10 +69,7 @@ where
 
 pub async fn check_password_for_user(username: &str, password: &str, db: &Database) -> bool {
     if let Ok(Some(user)) = db.get_user(username).await {
-        match verify_password(password, &user.password_hash) {
-            Ok(true) => true,
-            _ => false,
-        }
+        matches!(verify_password(password, &user.password_hash), Ok(true))
     } else {
         false
     }

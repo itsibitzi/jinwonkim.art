@@ -12,9 +12,12 @@ pub struct StaticFiles {
 }
 
 impl StaticFiles {
-    pub fn new() -> Self {
-        let image_root = PathBuf::from("images").canonicalize().unwrap();
-        let styles_root = PathBuf::from("styles").canonicalize().unwrap();
+    pub fn new(root_dir: impl AsRef<Path>) -> Self {
+        let image_root = root_dir.as_ref().join("images").canonicalize().unwrap();
+        let styles_root = root_dir.as_ref().join("styles").canonicalize().unwrap();
+
+        tracing::info!("Using images root: {}", image_root.display());
+        tracing::info!("Using styles root: {}", styles_root.display());
 
         StaticFiles {
             image_root,
@@ -34,10 +37,9 @@ impl StaticFiles {
 
         let canonical = path.parent().unwrap().canonicalize()?;
 
-        println!("{}", canonical.display());
-        println!("{}", &self.image_root.display());
-
         if canonical.starts_with(&self.image_root) {
+            tracing::info!("Saving image: {}", path.display());
+
             let mut file = File::create(path).await?;
             file.write_all(bytes).await?;
 
@@ -47,23 +49,19 @@ impl StaticFiles {
         }
     }
 
-    pub async fn get_file(&self, path: impl AsRef<Path>) -> Result<Vec<u8>, Error> {
-        let path = path.as_ref();
+    pub async fn get_image(&self, name: &str) -> Result<Vec<u8>, Error> {
+        let path = self.image_root.join(name);
 
-        let base = if path.starts_with("images") {
-            &self.image_root
-        } else if path.starts_with("styles") {
-            &self.styles_root
-        } else {
-            Err(Error::InvalidBaseDirectory)?
-        };
+        tracing::info!("Loading image: {}", path.display());
 
-        let canonical = path.canonicalize()?;
+        Ok(tokio::fs::read(&path).await?)
+    }
 
-        if canonical.starts_with(base) {
-            Ok(tokio::fs::read(&path).await?)
-        } else {
-            Err(Error::InvalidPath)?
-        }
+    pub async fn get_style(&self, name: &str) -> Result<Vec<u8>, Error> {
+        let path = self.styles_root.join(name);
+
+        tracing::info!("Loading style: {}", path.display());
+
+        Ok(tokio::fs::read(&path).await?)
     }
 }

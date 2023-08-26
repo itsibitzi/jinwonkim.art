@@ -7,7 +7,7 @@ pub struct Category {
 }
 
 impl Category {
-    pub fn to_image_category(self, checked: bool) -> ImageCategory {
+    pub fn into_image_category(self, checked: bool) -> ImageCategory {
         ImageCategory {
             id: self.id,
             name: self.name,
