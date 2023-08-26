@@ -61,6 +61,7 @@ async fn main() -> Result<(), Error> {
         .route("/categories/:category", get(get_category_page))
         .route("/art/:image", get(get_image_page))
         .route("/assets/:filename", get(serve_image))
+        .route("/thumbs/:filename", get(serve_thumb))
         .route("/styles/:filename", get(serve_styles))
         // Admin stuff
         .route("/admin", get(get_admin_page))

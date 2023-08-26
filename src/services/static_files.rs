@@ -8,19 +8,23 @@ use crate::model::error::Error;
 #[derive(Clone)]
 pub struct StaticFiles {
     image_root: PathBuf,
+    thumbs_root: PathBuf,
     styles_root: PathBuf,
 }
 
 impl StaticFiles {
     pub fn new(root_dir: impl AsRef<Path>) -> Self {
         let image_root = root_dir.as_ref().join("images").canonicalize().unwrap();
+        let thumbs_root = root_dir.as_ref().join("thumbs").canonicalize().unwrap();
         let styles_root = root_dir.as_ref().join("styles").canonicalize().unwrap();
 
         tracing::info!("Using images root: {}", image_root.display());
+        tracing::info!("Using thumbs root: {}", thumbs_root.display());
         tracing::info!("Using styles root: {}", styles_root.display());
 
         StaticFiles {
             image_root,
+            thumbs_root,
             styles_root,
         }
     }
@@ -53,6 +57,14 @@ impl StaticFiles {
         let path = self.image_root.join(name);
 
         tracing::info!("Loading image: {}", path.display());
+
+        Ok(tokio::fs::read(&path).await?)
+    }
+
+    pub async fn get_thumb(&self, name: &str) -> Result<Vec<u8>, Error> {
+        let path = self.thumbs_root.join(name);
+
+        tracing::info!("Loading thumb: {}", path.display());
 
         Ok(tokio::fs::read(&path).await?)
     }

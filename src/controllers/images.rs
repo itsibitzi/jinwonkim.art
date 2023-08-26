@@ -17,3 +17,14 @@ pub async fn serve_image(
         .map_err(|e| e.into())?;
     Ok(([(CONTENT_TYPE, "image/jpeg")], file))
 }
+
+pub async fn serve_thumb(
+    Path(filename): Path<String>,
+    Extension(static_files): Extension<StaticFiles>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let file = static_files
+        .get_thumb(&filename)
+        .await
+        .map_err(|e| e.into())?;
+    Ok(([(CONTENT_TYPE, "image/jpeg")], file))
+}

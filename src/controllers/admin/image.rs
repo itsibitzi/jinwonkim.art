@@ -17,6 +17,7 @@ use crate::{
         auth::{check_password_for_user, AuthBasic},
         database::Database,
         static_files::StaticFiles,
+        thumbs::make_thumbnail,
     },
 };
 
@@ -89,9 +90,10 @@ pub async fn post_image(
             .await
             .map_err(|e| e.into())?;
 
-        let ext = if image_upload.img_name.ends_with("png") {
+        let ext = if image_upload.img_name.to_lowercase().ends_with("png") {
             ".png"
-        } else if image_upload.img_name.ends_with("jpg") || image_upload.img_name.ends_with("jpeg")
+        } else if image_upload.img_name.to_lowercase().ends_with("jpg")
+            || image_upload.img_name.to_lowercase().ends_with("jpeg")
         {
             ".jpg"
         } else {
@@ -108,6 +110,11 @@ pub async fn post_image(
                 error!("Error while saving image: {}", e);
                 (StatusCode::BAD_REQUEST, e.to_string())
             })?;
+
+        make_thumbnail(&filename).await.map_err(|e| {
+            error!("Error while creating thumbnail: {}", e);
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
 
         db.create_image(
             image_upload.name,
