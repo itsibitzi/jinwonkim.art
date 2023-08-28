@@ -39,11 +39,14 @@ async fn main() -> Result<(), Error> {
 
     let cli = Cli::parse();
 
+    let root_dir = cli.root_dir.canonicalize()?;
+
     info!("Starting database...");
-    let db = Database::new(&cli.root_dir).await?;
+    let db = Database::new(&root_dir).await?;
     db.migrate().await?;
 
-    let templates = cli.root_dir.join("templates").display().to_string() + "/*";
+    let templates = root_dir.join("templates").display().to_string() + "/*";
+    tracing::info!("Using template directory: {}", templates);
     let tera = Tera::new(&templates).unwrap();
 
     let static_files = StaticFiles::new(cli.root_dir);
@@ -107,6 +110,5 @@ fn setup_tracing() {
 
     let rust_log = env::var_os("RUST_LOG").unwrap_or("***ENV VAR NOT SET***".into());
 
-    println!("{:?}", rust_log);
     tracing::info!("Setup logging with: {:?}", rust_log);
 }

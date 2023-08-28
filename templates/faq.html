@@ -7,7 +7,7 @@
     <div style="max-width: 60em">
         {% for faq in faqs %}
         <strong>{{faq.question}}</strong>
-        <div style="white-space: pre">{{faq.answer}}</div>
+        <div style="white-space: pre">{{faq.answer|safe}}</div>
         <br />
         {% endfor %}
     </div>

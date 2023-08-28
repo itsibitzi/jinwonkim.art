@@ -2,10 +2,8 @@
 {% include "header.html" %}
 
 <main>
-    <h2>About</h2>
-    <br />
     <div style="max-width: 60em">
-        <div style="white-space: pre-wrap">{{about}}</div>
+        <div style="white-space: pre-wrap">{{about|safe}}</div>
     </div>
 </main>
 

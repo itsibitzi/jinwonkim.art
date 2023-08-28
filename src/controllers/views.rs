@@ -67,7 +67,9 @@ pub async fn get_about_page(
     let mut ctx = Context::new();
 
     let categories = db.list_categories().await.map_err(|e| e.into())?;
+
     let about = db.select_about().await.map_err(|e| e.into())?;
+    let about = markdown::to_html(&about);
 
     ctx.insert("current_page", "about");
     ctx.insert("categories", &categories);
@@ -83,7 +85,13 @@ pub async fn get_faq_page(
     let mut ctx = Context::new();
 
     let categories = db.list_categories().await.map_err(|e| e.into())?;
-    let faqs = db.list_faqs().await.map_err(|e| e.into())?;
+    let faqs = db
+        .list_faqs()
+        .await
+        .map_err(|e| e.into())?
+        .iter_mut()
+        .map(|faq| faq.answer = markdown::to_html(&faq.answer))
+        .collect::<Vec<_>>();
 
     ctx.insert("current_page", "faq");
     ctx.insert("categories", &categories);
