@@ -85,12 +85,14 @@ pub async fn get_faq_page(
     let mut ctx = Context::new();
 
     let categories = db.list_categories().await.map_err(|e| e.into())?;
-    let faqs = db
-        .list_faqs()
-        .await
-        .map_err(|e| e.into())?
+
+    let mut faqs = db.list_faqs().await.map_err(|e| e.into())?;
+    let faqs = faqs
         .iter_mut()
-        .map(|faq| faq.answer = markdown::to_html(&faq.answer))
+        .map(|faq| {
+            faq.answer = markdown::to_html(&faq.answer);
+            faq
+        })
         .collect::<Vec<_>>();
 
     ctx.insert("current_page", "faq");
