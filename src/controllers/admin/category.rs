@@ -7,7 +7,7 @@ use axum::{
 use tera::{Context, Tera};
 
 use crate::{
-    model::forms::category::{CreateCategory, DeleteCategory},
+    model::forms::category::{CreateCategory, DeleteCategory, MoveCategory},
     services::{
         auth::{check_password_for_user, AuthBasic},
         database::Database,
@@ -26,6 +26,14 @@ pub async fn get_admin_category_page(
 
         ctx.insert("current_page", "categories");
         ctx.insert("categories", &categories);
+        ctx.insert(
+            "max_category_position",
+            &categories
+                .iter()
+                .max_by_key(|c| c.position)
+                .map(|c| c.position)
+                .unwrap_or(i64::MAX),
+        );
 
         Ok(Html(tera.render("admin_categories.html", &ctx).unwrap()))
     } else {
@@ -40,6 +48,21 @@ pub async fn post_category(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     if check_password_for_user(&username, &password, &db).await {
         db.create_category(&payload.name)
+            .await
+            .map(|_| Redirect::to("/admin/categories"))
+            .map_err(|e| e.into())
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
+    }
+}
+
+pub async fn move_category(
+    AuthBasic((username, password)): AuthBasic,
+    Form(payload): Form<MoveCategory>,
+    Extension(db): Extension<Database>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if check_password_for_user(&username, &password, &db).await {
+        db.move_category(&payload.id, payload.up)
             .await
             .map(|_| Redirect::to("/admin/categories"))
             .map_err(|e| e.into())

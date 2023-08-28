@@ -4,6 +4,7 @@ use serde::Serialize;
 pub struct Category {
     pub id: String,
     pub name: String,
+    pub position: i64,
 }
 
 impl Category {

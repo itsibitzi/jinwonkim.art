@@ -3,8 +3,14 @@ use std::path::Path;
 use sqlx::SqlitePool;
 
 use crate::model::{
-    about::About, category::Category, db::IdAndPosition, error::Error, faq::Faq,
-    forms::faq::CreateFaq, image::Image, user::User,
+    about::About,
+    category::Category,
+    db::{CategoryIdAndPosition, ImageIdAndPosition},
+    error::Error,
+    faq::Faq,
+    forms::faq::CreateFaq,
+    image::Image,
+    user::User,
 };
 
 #[derive(Clone)]
@@ -63,7 +69,12 @@ impl Database {
     pub async fn list_categories(&self) -> Result<Vec<Category>, Error> {
         let categories = sqlx::query_as!(
             Category,
-            "SELECT id, name FROM categories ORDER BY name ASC"
+            r#"SELECT 
+                id,
+                name,
+                position AS "position!"
+            FROM categories
+            ORDER BY position ASC"#
         )
         .fetch_all(&self.pool)
         .await?;
@@ -158,16 +169,19 @@ impl Database {
         let rows: Vec<_> = sqlx::query!(
             r#"
             SELECT 
-              images.id          AS image_id,
-              images.name        AS image_name,
-              images.description AS image_description,
-              images.filename    AS image_filename, 
-              categories.id      AS category_id,
-              categories.name    AS category_name
+              images.id               AS image_id,
+              images.name             AS image_name,
+              images.description      AS image_description,
+              images.filename         AS image_filename, 
+              images.position         AS "image_position!", 
+              images.hide_on_homepage AS "image_hide_on_homepage!",
+              categories.id           AS category_id,
+              categories.name         AS category_name,
+              categories.position     AS category_position
             FROM images
             LEFT OUTER JOIN category_images ON category_images.image_id = images.id
             LEFT OUTER JOIN categories ON category_images.category_id = categories.id
-            ORDER BY position ASC
+            ORDER BY images.position ASC
             "#
         )
         .fetch_all(&self.pool)
@@ -185,12 +199,20 @@ impl Database {
                     categories: group
                         .iter()
                         .filter_map(|row| {
-                            match (row.category_id.clone(), row.category_name.clone()) {
-                                (Some(id), Some(name)) => Some(Category { id, name }),
+                            match (
+                                row.category_id.clone(),
+                                row.category_name.clone(),
+                                row.category_position,
+                            ) {
+                                (Some(id), Some(name), Some(position)) => {
+                                    Some(Category { id, name, position })
+                                }
                                 _ => None,
                             }
                         })
                         .collect(),
+                    position: first.image_position,
+                    hide_on_homepage: first.image_hide_on_homepage == 1,
                 }
             })
             .collect();
@@ -202,17 +224,20 @@ impl Database {
         let rows: Vec<_> = sqlx::query!(
             r#"
             SELECT 
-              images.id          AS image_id,
-              images.name        AS image_name,
-              images.description AS image_description,
-              images.filename    AS image_filename, 
-              categories.id      AS category_id,
-              categories.name    AS category_name
+              images.id               AS image_id,
+              images.name             AS image_name,
+              images.description      AS image_description,
+              images.filename         AS image_filename, 
+              images.position         AS "image_position!",
+              images.hide_on_homepage AS image_hide_on_homepage,
+              categories.id           AS category_id,
+              categories.name         AS category_name,
+              categories.position     AS "category_position!"
             FROM images
             LEFT OUTER JOIN category_images ON category_images.image_id = images.id
             LEFT OUTER JOIN categories ON category_images.category_id = categories.id
             WHERE categories.id = ?1
-            ORDER BY position ASC
+            ORDER BY images.position ASC
             "#,
             category
         )
@@ -233,8 +258,11 @@ impl Database {
                         .map(|row| Category {
                             id: row.category_id.clone(),
                             name: row.category_name.clone(),
+                            position: row.category_position,
                         })
                         .collect(),
+                    position: first.image_position,
+                    hide_on_homepage: first.image_hide_on_homepage == 1,
                 }
             })
             .collect();
@@ -242,16 +270,77 @@ impl Database {
         Ok(images)
     }
 
+    pub async fn move_category(&self, id: &str, up: bool) -> Result<(), Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let image = sqlx::query_as!(
+            CategoryIdAndPosition,
+            r#"SELECT id, position AS "position!" FROM categories WHERE id = ?1"#,
+            id
+        )
+        .fetch_one(&mut tx)
+        .await?;
+
+        let swap_image = if up {
+            sqlx::query_as!(
+                CategoryIdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM categories 
+                WHERE position < ?1 
+                ORDER BY categories.position DESC"#,
+                image.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        } else {
+            sqlx::query_as!(
+                CategoryIdAndPosition,
+                r#"SELECT 
+                    id, 
+                    position AS "position!"
+                FROM categories 
+                WHERE position > ?1 
+                ORDER BY categories.position ASC"#,
+                image.position
+            )
+            .fetch_one(&mut tx)
+            .await?
+        };
+
+        sqlx::query!(
+            "UPDATE categories SET position = ?1 WHERE id = ?2",
+            image.position,
+            swap_image.id
+        )
+        .execute(&mut tx)
+        .await?;
+        sqlx::query!(
+            "UPDATE categories SET position = ?1 WHERE id = ?2",
+            swap_image.position,
+            image.id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+        Ok(())
+    }
+
     pub async fn get_image_by_id(&self, image_id: i64) -> Result<Option<Image>, Error> {
         let rows: Vec<_> = sqlx::query!(
             r#"
             SELECT 
-              images.id          AS image_id,
-              images.name        AS image_name,
-              images.description AS image_description,
-              images.filename    AS image_filename, 
-              categories.id      AS category_id,
-              categories.name    AS category_name
+              images.id               AS image_id,
+              images.name             AS image_name,
+              images.description      AS image_description,
+              images.filename         AS image_filename, 
+              images.position         AS "image_position!", 
+              images.hide_on_homepage AS image_hide_on_homepage,
+              categories.id           AS category_id,
+              categories.name         AS category_name,
+              categories.position     AS category_position
             FROM images
             LEFT OUTER JOIN category_images ON category_images.image_id = images.id
             LEFT OUTER JOIN categories ON category_images.category_id = categories.id
@@ -274,12 +363,20 @@ impl Database {
                     categories: group
                         .iter()
                         .filter_map(|row| {
-                            match (row.category_id.clone(), row.category_name.clone()) {
-                                (Some(id), Some(name)) => Some(Category { id, name }),
+                            match (
+                                row.category_id.clone(),
+                                row.category_name.clone(),
+                                row.category_position,
+                            ) {
+                                (Some(id), Some(name), Some(position)) => {
+                                    Some(Category { id, name, position })
+                                }
                                 _ => None,
                             }
                         })
                         .collect(),
+                    position: first.image_position,
+                    hide_on_homepage: first.image_hide_on_homepage == 1,
                 }
             })
             .collect();
@@ -356,7 +453,7 @@ impl Database {
             r#"
             SELECT id, question, answer 
             FROM faqs
-            ORDER BY position ASC
+            ORDER BY faqs.position ASC
             "#
         )
         .fetch_all(&self.pool)
@@ -369,7 +466,7 @@ impl Database {
         let mut tx = self.pool.begin().await?;
 
         let image = sqlx::query_as!(
-            IdAndPosition,
+            ImageIdAndPosition,
             r#"SELECT id, position AS "position!" FROM images WHERE id = ?1"#,
             id
         )
@@ -378,26 +475,26 @@ impl Database {
 
         let swap_image = if up {
             sqlx::query_as!(
-                IdAndPosition,
+                ImageIdAndPosition,
                 r#"SELECT 
                     id, 
                     position AS "position!"
                 FROM images 
                 WHERE position < ?1 
-                ORDER BY position DESC"#,
+                ORDER BY images.position DESC"#,
                 image.position
             )
             .fetch_one(&mut tx)
             .await?
         } else {
             sqlx::query_as!(
-                IdAndPosition,
+                ImageIdAndPosition,
                 r#"SELECT 
                     id, 
                     position AS "position!"
                 FROM images 
                 WHERE position > ?1 
-                ORDER BY position ASC"#,
+                ORDER BY images.position ASC"#,
                 image.position
             )
             .fetch_one(&mut tx)
@@ -423,11 +520,27 @@ impl Database {
         Ok(())
     }
 
+    pub async fn hide_image(&self, id: i64, hide: bool) -> Result<(), Error> {
+        let mut conn = self.pool.acquire().await?;
+
+        let hide = if hide { 1 } else { 0 };
+
+        sqlx::query!(
+            "UPDATE images SET hide_on_homepage = ?1 WHERE id = ?2",
+            hide,
+            id
+        )
+        .execute(&mut conn)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn move_faq(&self, id: i64, up: bool) -> Result<(), Error> {
         let mut tx = self.pool.begin().await?;
 
         let faq = sqlx::query_as!(
-            IdAndPosition,
+            ImageIdAndPosition,
             r#"SELECT id, position AS "position!" FROM faqs WHERE id = ?1"#,
             id
         )
@@ -436,26 +549,26 @@ impl Database {
 
         let swap_faq = if up {
             sqlx::query_as!(
-                IdAndPosition,
+                ImageIdAndPosition,
                 r#"SELECT 
                     id, 
                     position AS "position!"
                 FROM faqs 
                 WHERE position < ?1 
-                ORDER BY position DESC"#,
+                ORDER BY faqs.position DESC"#,
                 faq.position
             )
             .fetch_one(&mut tx)
             .await?
         } else {
             sqlx::query_as!(
-                IdAndPosition,
+                ImageIdAndPosition,
                 r#"SELECT 
                     id, 
                     position AS "position!"
                 FROM faqs 
                 WHERE position > ?1 
-                ORDER BY position ASC"#,
+                ORDER BY faqs.position ASC"#,
                 faq.position
             )
             .fetch_one(&mut tx)

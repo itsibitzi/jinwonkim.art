@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     model::{
         category::ImageCategory,
-        forms::image::{CreateImage, DeleteImage, MoveImage, UpdateImage},
+        forms::image::{CreateImage, DeleteImage, HideImage, MoveImage, UpdateImage},
     },
     services::{
         auth::{check_password_for_user, AuthBasic},
@@ -35,6 +35,14 @@ pub async fn get_admin_images_page(
         ctx.insert("current_page", "images");
         ctx.insert("categories", &categories);
         ctx.insert("images", &images);
+        ctx.insert(
+            "max_image_position",
+            &images
+                .iter()
+                .max_by_key(|i| i.position)
+                .map(|i| i.position)
+                .unwrap_or(i64::MAX),
+        );
 
         Ok(Html(tera.render("admin_images.html", &ctx).unwrap()))
     } else {
@@ -153,6 +161,7 @@ pub async fn put_image(
         Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
     }
 }
+
 pub async fn move_image(
     AuthBasic((username, password)): AuthBasic,
     Form(payload): Form<MoveImage>,
@@ -160,6 +169,21 @@ pub async fn move_image(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     if check_password_for_user(&username, &password, &db).await {
         db.move_image(payload.id, payload.up)
+            .await
+            .map(|_| Redirect::to("/admin/images"))
+            .map_err(|e| e.into())
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "Failed to check password".into()))
+    }
+}
+
+pub async fn hide_image(
+    AuthBasic((username, password)): AuthBasic,
+    Form(payload): Form<HideImage>,
+    Extension(db): Extension<Database>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if check_password_for_user(&username, &password, &db).await {
+        db.hide_image(payload.id, payload.hide)
             .await
             .map(|_| Redirect::to("/admin/images"))
             .map_err(|e| e.into())

@@ -125,3 +125,9 @@ pub struct MoveImage {
     pub id: i64,
     pub up: bool,
 }
+
+#[derive(Deserialize)]
+pub struct HideImage {
+    pub id: i64,
+    pub hide: bool,
+}

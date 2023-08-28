@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-mkdir -p ~/.backup/jinwonkim.art/
-scp -r root@jinwonkim.art:/opt/jinwonkim.art ~/.backup/jinwonkim.art
+mkdir -p "$HOME/.backup/$(date)"
+scp -r root@jinwonkim.art:/opt/jinwonkim.art "$HOME/.backup/$(date)"

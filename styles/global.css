@@ -27,3 +27,7 @@ header {
 main {
   margin-top: 32px;
 }
+
+button[disabled] {
+  filter: grayscale(100%)
+}

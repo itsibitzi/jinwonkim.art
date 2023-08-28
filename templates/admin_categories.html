@@ -30,6 +30,20 @@
                 {{category.name}}
             </td>
             <td>
+                <form action="/admin/categories/move" method="POST">
+                    <input type="hidden" name="id" value="{{category.id}}" />
+                    <input type="hidden" name="up" value="true" />
+                    <button type="submit" {% if category.position == 1 %}disabled{% endif %}>⬆️</button>
+                </form>
+            </td>
+            <td>
+                <form action="/admin/categories/move" method="POST">
+                    <input type="hidden" name="id" value="{{category.id}}" />
+                    <input type="hidden" name="up" value="false" />
+                    <button type="submit" {% if category.position == max_category_position %}disabled{% endif %}>⬇️</button>
+                </form>
+            </td>
+            <td>
                 <form action="/admin/categories/delete" method="POST">
                     <input type="hidden" name="id" value="{{category.id}}" />
                     <button type="submit">Delete</button>

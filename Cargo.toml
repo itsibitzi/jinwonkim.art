@@ -31,6 +31,10 @@ priority = "optional"
 assets = [
   # binary
   ["target/release/jinwonkim-art", "/usr/bin/", "755"],
+  # migrations - this is gross putting them in /usr/bin/...
+  ["migrations/*", "/usr/bin/migrations", "755"],
+  ["styles/*", "/opt/jinwonkim.art/styles", "755"],
+  ["templates/*", "/opt/jinwonkim.art/templates", "755"],
 ]
 maintainer-scripts = "systemd/"
 systemd-units = { enable = true }

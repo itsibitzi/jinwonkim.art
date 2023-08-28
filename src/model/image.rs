@@ -9,4 +9,6 @@ pub struct Image {
     pub description: String,
     pub filename: String,
     pub categories: Vec<Category>,
+    pub position: i64,
+    pub hide_on_homepage: bool,
 }

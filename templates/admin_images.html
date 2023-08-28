@@ -20,7 +20,7 @@
       <legend>New Image</legend>
       <div>
         <label for="image_name">Name:</label>
-        <input id="image_name" type="text" placeholder="Name" name="name" />
+        <input id="image_name" type="text" placeholder="Name" name="name" required />
       </div>
       <div>
         <label for="image_description">Description:</label>
@@ -38,7 +38,7 @@
       </div>
       <div>
         <label for="img">Select image:</label>
-        <input type="file" id="img" name="img" accept="image/*" />
+        <input type="file" id="img" name="img" accept="image/*" required/>
       </div>
       <p>
         <small>
@@ -58,17 +58,23 @@
       <form action="/admin/images/move" method="POST">
           <input type="hidden" name="id" value="{{image.id}}" />
           <input type="hidden" name="up" value="true" />
-          <button type="submit">⬆️</button>
+          <button type="submit" {% if image.position == 1 %}disabled{% endif %}>⬆️</button>
       </form>
       <form action="/admin/images/move" method="POST">
           <input type="hidden" name="id" value="{{image.id}}" />
           <input type="hidden" name="up" value="false" />
-          <button type="submit">⬇️</button>
+          <button type="submit" {% if image.position == max_image_position %}disabled{% endif %}>⬇️</button>
       </form>
       <a href="/admin/images/edit/{{image.id}}"><button type="button">Edit</button></a>
       <form action="/admin/images/delete" method="POST" onsubmit="return confirm('Do you really want to delete this image?');">
         <input type="hidden" name="id" value="{{image.id}}" />
         <button type="submit">Delete</button>
+      </form>
+      <form action="/admin/images/hide" method="POST">
+        <input type="hidden" name="id" value="{{image.id}}" />
+        <input type="hidden" name="hide" value="{{image.hide_on_homepage == false}}" />
+        Hide on home page?
+        <input type="checkbox" onChange="this.form.submit()" {% if image.hide_on_homepage %}checked{% endif %} />
       </form>
     </div>
   </div>
@@ -79,7 +85,7 @@
     <li>{{category.name}}</li>
     {% endfor %}
   </ul>
-  <img style="width: 400px;" src="/assets/{{image.filename}}" />
+  <img style="width: 400px;" src="/thumbs/{{image.filename}}" />
   <hr />
   {% endfor %}
 </div>

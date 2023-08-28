@@ -9,3 +9,9 @@ pub struct CreateCategory {
 pub struct DeleteCategory {
     pub id: String,
 }
+
+#[derive(Deserialize)]
+pub struct MoveCategory {
+    pub id: String,
+    pub up: bool,
+}

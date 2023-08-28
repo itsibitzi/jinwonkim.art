@@ -1,0 +1,3 @@
+ALTER TABLE images ADD COLUMN hide_on_homepage INTEGER NOT NULL DEFAULT FALSE;
+
+

@@ -14,7 +14,13 @@ pub async fn get_home_page(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let mut ctx = Context::new();
 
-    let images = db.list_images().await.map_err(|e| e.into())?;
+    let images = db
+        .list_images()
+        .await
+        .map_err(|e| e.into())?
+        .into_iter()
+        .filter(|i| !i.hide_on_homepage)
+        .collect::<Vec<_>>();
     let categories = db.list_categories().await.map_err(|e| e.into())?;
 
     ctx.insert("current_page", "home");
