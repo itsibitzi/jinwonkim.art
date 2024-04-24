@@ -58,11 +58,11 @@ h2 {
   height: 400px;
   margin: 10px;
   transition: transform 0.15s ease-in-out;
-  background: #ececec;
+  /* background: #ececec;
   padding: 10px;
   display: flex;
   align-items: center;
-  box-shadow: 2px 2px 5px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 2px 2px 5px 1px rgba(0, 0, 0, 0.4); */
 }
 
 .grid-image-container:hover {

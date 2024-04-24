@@ -1,0 +1,53 @@
+{% extends "common.html" %} {% block content %}
+
+{% include "admin_header.html" %}
+<link href="/styles/cropper.min.css" rel="stylesheet" />
+<script src="/js/cropper.min.js"></script>
+
+<fieldset>
+  <legend>{{image.name}}</legend>
+  <img id='thumbnail_crop_preview' src="/assets/{{image.filename}}" />
+
+  <form action="/admin/images/update-thumbnail" method="POST">
+    <input type="hidden" name="id" value="{{image.id}}" />
+    <input type="hidden" id="thumbnail_crop_rect" name="thumbnail_crop_rect" />
+
+    <p>
+      <small>
+        Note: When you press submit there will be a small delay as the server generates a high quality cropped
+        thumbnail.
+      </small>
+    </p>
+    <button type="submit">Submit</button>
+  </form>
+</fieldset>
+
+<script>
+  const imgElement = document.getElementById('thumbnail_crop_preview');
+
+  const cropper = new Cropper(imgElement, {
+    // View Mode:
+    // Restrict the minimum canvas size to fit within the container.
+    // If the proportions of the canvas and the container differ, the minimum canvas will be surrounded by extra space in one of the dimensions.
+    viewMode: 2,
+    zoomable: false,
+    rotatable: false,
+    scalable: false,
+    aspectRatio: 1,
+    crop(event) {
+      const cropHiddenValue = document.getElementById('thumbnail_crop_rect');
+
+      const rect = {
+        x: event.detail.x,
+        y: event.detail.y,
+        width: event.detail.width,
+        height: event.detail.height,
+      };
+
+      cropHiddenValue.value = JSON.stringify(rect);
+    },
+  });
+
+</script>
+
+{% endblock content %}

@@ -1,5 +1,3 @@
-#![feature(slice_group_by)]
-
 mod cli;
 mod controllers;
 mod model;
@@ -26,10 +24,11 @@ use crate::{
         category::{delete_category, get_admin_category_page, move_category, post_category},
         faq::{delete_faq, get_admin_faq_page, move_faq, post_faq},
         image::{
-            delete_image, get_admin_edit_image_page, get_admin_images_page, move_image, post_image,
-            put_image, hide_image,
+            delete_image, get_admin_edit_image_page, get_admin_images_page, hide_image, move_image,
+            post_image, put_image,
         },
     },
+    image::{get_admin_edit_thumbnail_page, post_update_thumbnail_crop},
     services::{database::Database, static_files::StaticFiles},
 };
 
@@ -66,6 +65,7 @@ async fn main() -> Result<(), Error> {
         .route("/assets/:filename", get(serve_image))
         .route("/thumbs/:filename", get(serve_thumb))
         .route("/styles/:filename", get(serve_styles))
+        .route("/js/:filename", get(serve_js))
         // Admin stuff
         .route("/admin", get(get_admin_page))
         .route(
@@ -76,10 +76,18 @@ async fn main() -> Result<(), Error> {
         .route("/admin/categories/delete", post(delete_category))
         .route("/admin/images", get(get_admin_images_page).post(post_image))
         .route("/admin/images/edit/:image", get(get_admin_edit_image_page))
+        .route(
+            "/admin/images/edit-thumbnail/:image",
+            get(get_admin_edit_thumbnail_page),
+        )
         .route("/admin/images/delete", post(delete_image))
         .route("/admin/images/update", post(put_image))
         .route("/admin/images/move", post(move_image))
         .route("/admin/images/hide", post(hide_image))
+        .route(
+            "/admin/images/update-thumbnail",
+            post(post_update_thumbnail_crop),
+        )
         .route("/admin/about", get(get_admin_about_page).post(post_about))
         .route("/admin/faq", get(get_admin_faq_page).post(post_faq))
         .route("/admin/faq/delete", post(delete_faq))
@@ -90,7 +98,7 @@ async fn main() -> Result<(), Error> {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
-    info!("Starting server...");
+    info!("Starting server on `127.0.0.1:3000` ...");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

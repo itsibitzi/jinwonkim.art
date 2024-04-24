@@ -19,3 +19,4 @@ echo "INSERT INTO users (username, password_hash) VALUES ('$USERNAME', '$HASH')"
 # HTML...
 cp -r ./styles build/styles
 cp -r ./templates build/templates
+cp -r ./js build/js

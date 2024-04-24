@@ -3,6 +3,14 @@ use serde::Deserialize;
 
 use crate::model::error::Error;
 
+#[derive(Deserialize)]
+pub struct Rectangle {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
 // Parsed from multipart form data
 pub struct CreateImage {
     pub name: String,
@@ -10,6 +18,7 @@ pub struct CreateImage {
     pub categories: Vec<String>,
     pub img: Bytes,
     pub img_name: String,
+    pub thumbnail_crop_rect: Option<Rectangle>,
 }
 
 impl CreateImage {
@@ -19,11 +28,14 @@ impl CreateImage {
         let mut categories: Vec<String> = vec![];
         let mut img_name: Option<String> = None;
         let mut img: Option<Bytes> = None;
+        let mut thumbnail_crop_rect: Option<Rectangle> = None;
 
         while let Some(field) = payload.next_field().await? {
             let field_name = field
                 .name()
                 .ok_or(Error::IllegalStateError("Missing field name"))?;
+
+            tracing::debug!("FOUND FIELD {}", field_name);
 
             match field_name {
                 "name" => {
@@ -45,6 +57,15 @@ impl CreateImage {
                     );
                     img = Some(field.bytes().await?);
                 }
+                // Optional field
+                "thumbnail_crop_rect" => {
+                    let crop_rect_json = field.text().await?;
+                    thumbnail_crop_rect =
+                        serde_json::from_str(&crop_rect_json).map_err(|serde_err| {
+                            tracing::error!("Serde error {}", serde_err);
+                            Error::IllegalStateError("Malformed thumbnail crop rectangle")
+                        })?;
+                }
                 _ => {}
             }
         }
@@ -56,6 +77,7 @@ impl CreateImage {
                 categories,
                 img,
                 img_name,
+                thumbnail_crop_rect,
             }),
             _ => Err(Error::IllegalStateError(
                 "Missing fields, either name, description or img",
@@ -130,4 +152,10 @@ pub struct MoveImage {
 pub struct HideImage {
     pub id: i64,
     pub hide: bool,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateThumbnailCrop {
+    pub id: i64,
+    pub thumbnail_crop_rect: String,
 }

@@ -10,10 +10,14 @@
   textarea {
     resize: none;
   }
-  fieldset > div {
+
+  fieldset>div {
     margin-bottom: 10px;
   }
 </style>
+<link href="/styles/cropper.min.css" rel="stylesheet" />
+<script src="/js/cropper.min.js"></script>
+
 <div>
   <form action="/admin/images" method="POST" enctype="multipart/form-data">
     <fieldset>
@@ -38,11 +42,17 @@
       </div>
       <div>
         <label for="img">Select image:</label>
-        <input type="file" id="img" name="img" accept="image/*" required/>
+        <input type="file" id="img" name="img" accept="image/*" required />
+      </div>
+      <div>
+        <label for="crop_thumbnail_toggle">Crop Thumbnail</label>
+        <img id="thumbnail_crop_preview" />
+        <input type="hidden" id="thumbnail_crop_rect" name="thumbnail_crop_rect" />
       </div>
       <p>
         <small>
-          Note: When you press submit there will be a small delay as the server generates a high quality thumbnail.
+          Note: When you press submit there will be a small delay as the server generates a high quality cropped
+          thumbnail.
         </small>
       </p>
       <button type="submit">Submit</button>
@@ -56,17 +66,18 @@
     <h3>{{image.name}}</h3>
     <div style="margin-left:15px;display:flex;flex-direction:row;gap:5px;">
       <form action="/admin/images/move" method="POST">
-          <input type="hidden" name="id" value="{{image.id}}" />
-          <input type="hidden" name="up" value="true" />
-          <button type="submit" {% if image.position == 1 %}disabled{% endif %}>⬆️</button>
+        <input type="hidden" name="id" value="{{image.id}}" />
+        <input type="hidden" name="up" value="true" />
+        <button type="submit" {% if image.position==1 %}disabled{% endif %}>⬆️</button>
       </form>
       <form action="/admin/images/move" method="POST">
-          <input type="hidden" name="id" value="{{image.id}}" />
-          <input type="hidden" name="up" value="false" />
-          <button type="submit" {% if image.position == max_image_position %}disabled{% endif %}>⬇️</button>
+        <input type="hidden" name="id" value="{{image.id}}" />
+        <input type="hidden" name="up" value="false" />
+        <button type="submit" {% if image.position==max_image_position %}disabled{% endif %}>⬇️</button>
       </form>
       <a href="/admin/images/edit/{{image.id}}"><button type="button">Edit</button></a>
-      <form action="/admin/images/delete" method="POST" onsubmit="return confirm('Do you really want to delete this image?');">
+      <form action="/admin/images/delete" method="POST"
+        onsubmit="return confirm('Do you really want to delete this image?');">
         <input type="hidden" name="id" value="{{image.id}}" />
         <button type="submit">Delete</button>
       </form>
@@ -89,4 +100,59 @@
   <hr />
   {% endfor %}
 </div>
+
+<script>
+  function updateImagePreivew() {
+    const filePicker = document.getElementById('img');
+    const imgElement = document.getElementById('thumbnail_crop_preview');
+
+    if (!filePicker.files.length) {
+      imgElement.src = '';
+    } else {
+      imgElement.src = URL.createObjectURL(filePicker.files.item(0));
+
+      const cropper = new Cropper(imgElement, {
+        // View Mode:
+        // Restrict the minimum canvas size to fit within the container.
+        // If the proportions of the canvas and the container differ, the minimum canvas will be surrounded by extra space in one of the dimensions.
+        viewMode: 2,
+        zoomable: false,
+        rotatable: false,
+        scalable: false,
+        aspectRatio: 1,
+        crop(event) {
+          const cropHiddenValue = document.getElementById('thumbnail_crop_rect');
+
+          const rect = {
+            x: event.detail.x,
+            y: event.detail.y,
+            width: event.detail.width,
+            height: event.detail.height,
+          };
+
+          cropHiddenValue.value = JSON.stringify(rect);
+        },
+      });
+
+    }
+  }
+
+  function handleFileChange() {
+    updateImagePreivew();
+  }
+
+  const filePicker = document.getElementById('img');
+  filePicker.onchange = handleFileChange;
+
+  function toggleCropThumbnail(e) {
+    updateImagePreivew();
+
+    if (!e.target.checked) {
+      const cropHiddenValue = document.getElementById('thumbnail_crop_rect');
+
+      cropHiddenValue.value = undefined;
+    }
+  }
+</script>
+
 {% endblock content %}

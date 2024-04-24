@@ -26,14 +26,11 @@ markdown = "1.0.0-alpha.12"
 maintainer = "sam.cutler@protonmail.com"
 copyright = "2023, Sam Cutler"
 extended-description = "art website"
-depends = "$auto"
 priority = "optional"
 assets = [
-  # binary
-  ["target/release/jinwonkim-art", "/usr/bin/", "755"],
-  # migrations - this is gross putting them in /usr/bin/...
-  ["migrations/*", "/usr/bin/migrations", "755"],
+  ["target/x86_64-unknown-linux-gnu/release/jinwonkim-art", "/usr/bin/", "755"],
   ["styles/*", "/opt/jinwonkim.art/styles", "755"],
+  ["js/*", "/opt/jinwonkim.art/js", "755"],
   ["templates/*", "/opt/jinwonkim.art/templates", "755"],
 ]
 maintainer-scripts = "systemd/"

@@ -1,6 +1,7 @@
 use std::io;
 
 use axum::{extract::multipart::MultipartError, http::StatusCode};
+use image::ImageError;
 use sqlx::migrate::MigrateError;
 use thiserror::Error;
 
@@ -18,6 +19,8 @@ pub enum Error {
     MultipartError(#[from] MultipartError),
     #[error("Invalid path")]
     InvalidPath,
+    #[error("Image error")]
+    Image(#[from] ImageError),
 }
 
 impl Into<(StatusCode, String)> for Error {
@@ -31,6 +34,7 @@ impl Into<(StatusCode, String)> for Error {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Multipart error".into())
             }
             Self::InvalidPath => (StatusCode::BAD_REQUEST, "invalid path".into()),
+            Self::Image(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         }
     }
 }

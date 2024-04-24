@@ -2,42 +2,51 @@
 
 {% include "admin_header.html" %}
 <style>
-    input:not([type="checkbox"]),
-    textarea {
-      display: block;
-    }
-  
-    textarea {
-      resize: none;
-    }
+  input:not([type="checkbox"]),
+  textarea {
+    display: block;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  .image-previews {
+    padding-top: 6px;
+  }
 </style>
 <form action="/admin/images/update" method="POST" enctype="multipart/form-data">
-    <fieldset>
-      <legend>{{image.name}}</legend>
+  <fieldset>
+    <legend>{{image.name}}</legend>
+    <div>
+      <label for="image_name">Name:</label>
+      <input id="image_name" type="text" value="{{image.name}}" name="name" />
+    </div>
+    <div>
+      <label for="image_description">Description:</label>
+      <textarea id="image_description" type="text" placeholder="{{image.description}}" name="description"
+        cols="80">{{image.description}}</textarea>
+    </div>
+    <div>
+      <label>Categories:</label>
+      {% for category in categories %}
       <div>
-        <label for="image_name">Name:</label>
-        <input id="image_name" type="text" value="{{image.name}}" name="name" />
+        <input type="checkbox" id="c_{{category.id}}" name="category" value="{{category.id}}" {% if category.checked %}
+          checked {% endif %}>
+        <label for="c_{{category.id}}">{{category.name}}</label><br>
       </div>
-      <div>
-        <label for="image_description">Description:</label>
-        <textarea id="image_description" type="text" placeholder="{{image.description}}"
-          name="description" cols="80">{{image.description}}</textarea>
-      </div>
-      <div>
-        <label>Categories:</label>
-        {% for category in categories %}
-        <div>
-          <input type="checkbox" id="c_{{category.id}}" name="category" value="{{category.id}}" {% if category.checked %} checked {% endif %}>
-          <label for="c_{{category.id}}">{{category.name}}</label><br>
-        </div>
-        {% endfor %}
-      </div>
-      <div>
-        <img style="width: 400px;" src="/assets/{{image.filename}}" />
-      </div>
-      <input type="hidden" name="id" value="{{image.id}}" />
-      <button type="submit">Submit</button>
-    </fieldset>
-  </form>
+      {% endfor %}
+    </div>
+    <label>Image:</label>
+    <br />
+    <a href="/admin/images/edit-thumbnail/{{image.id}}"><button type="button">Edit Thumbnail Crop</button></a>
+    <div class="image-previews">
+      <img style="width: 600px;" src="/assets/{{image.filename}}" />
+      <img style="width: 200px;" src="/thumbs/{{image.filename}}" />
+    </div>
+    <input type="hidden" name="id" value="{{image.id}}" />
+    <button type="submit">Submit</button>
+  </fieldset>
+</form>
 
 {% endblock content %}

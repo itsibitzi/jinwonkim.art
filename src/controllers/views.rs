@@ -119,3 +119,12 @@ pub async fn serve_styles(
 
     Ok(([(CONTENT_TYPE, "text/css")], file))
 }
+
+pub async fn serve_js(
+    Path(filename): Path<String>,
+    Extension(static_files): Extension<StaticFiles>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let file = static_files.get_js(&filename).await.map_err(|e| e.into())?;
+
+    Ok(([(CONTENT_TYPE, "text/javascript")], file))
+}

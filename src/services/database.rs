@@ -188,7 +188,7 @@ impl Database {
         .await?;
 
         let images = rows
-            .group_by(|a, b| a.image_id == b.image_id)
+            .chunk_by(|a, b| a.image_id == b.image_id)
             .map(|group| {
                 let first = &group[0];
                 Image {
@@ -245,7 +245,7 @@ impl Database {
         .await?;
 
         let images = rows
-            .group_by(|a, b| a.image_id == b.image_id)
+            .chunk_by(|a, b| a.image_id == b.image_id)
             .map(|group| {
                 let first = &group[0];
                 Image {
@@ -352,7 +352,7 @@ impl Database {
         .await?;
 
         let mut images: Vec<Image> = rows
-            .group_by(|a, b| a.image_id == b.image_id)
+            .chunk_by(|a, b| a.image_id == b.image_id)
             .map(|group| {
                 let first = &group[0];
                 Image {
