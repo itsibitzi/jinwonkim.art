@@ -4,6 +4,14 @@
 <link href="/styles/cropper.min.css" rel="stylesheet" />
 <script src="/js/cropper.min.js"></script>
 
+<style>
+  #thumbnail_crop_preview {
+    display: block;
+    max-width: 80%;
+    max-height: 70vh;
+  }
+</style>
+
 <fieldset>
   <legend>{{image.name}}</legend>
   <img id='thumbnail_crop_preview' src="/assets/{{image.filename}}" />

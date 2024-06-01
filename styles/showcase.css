@@ -21,11 +21,11 @@
     box-sizing: border-box;
     background-repeat: no-repeat;
     background-size: contain;
+    min-width: 70%;
 }
 
 .showcase-text {
     padding-left: 32px;
-    min-width: 24em;
 }
 
 .showcase-title {
