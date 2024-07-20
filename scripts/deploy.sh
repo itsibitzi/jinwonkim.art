@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+# OLD - no longer used since we now use cargo-dist and homebrew
+
 CURRENT_TARGET=$(rustc -vV | sed -n 's/host: //p')
 
 if [[ "$CURRENT_TARGET" == "aarch64-apple-darwin" ]]; then
@@ -12,4 +14,3 @@ if [[ "$CURRENT_TARGET" == "aarch64-apple-darwin" ]]; then
 else
     echo 'not on apple arm :('
 fi
-

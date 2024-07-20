@@ -2,6 +2,7 @@
 name = "jinwonkim-art"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/itsibitzi/jinwonkim.art"
 
 [dependencies]
 axum = { version = "0.5.6", features = ["multipart"] }
@@ -22,16 +23,24 @@ image = "0.24.5"
 clap = { version = "4.4.0", features = ["derive"] }
 markdown = "1.0.0-alpha.12"
 
-[package.metadata.deb]
-maintainer = "sam.cutler@protonmail.com"
-copyright = "2023, Sam Cutler"
-extended-description = "art website"
-priority = "optional"
-assets = [
-  ["target/x86_64-unknown-linux-gnu/release/jinwonkim-art", "/usr/bin/", "755"],
-  ["styles/*", "/opt/jinwonkim.art/styles", "755"],
-  ["js/*", "/opt/jinwonkim.art/js", "755"],
-  ["templates/*", "/opt/jinwonkim.art/templates", "755"],
-]
-maintainer-scripts = "systemd/"
-systemd-units = { enable = true }
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.19.1"
+# CI backends to support
+ci = "github"
+# The installers to generate for each app
+installers = ["shell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu"]
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
+# Publish jobs to run in CI
+pr-run-mode = "plan"
+# Whether to install an updater program
+install-updater = false
