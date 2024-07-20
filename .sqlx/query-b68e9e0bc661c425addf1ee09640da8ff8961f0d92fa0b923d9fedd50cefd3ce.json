@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE images SET name = ?1, description = ?2 WHERE id = ?3\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "b68e9e0bc661c425addf1ee09640da8ff8961f0d92fa0b923d9fedd50cefd3ce"
+}

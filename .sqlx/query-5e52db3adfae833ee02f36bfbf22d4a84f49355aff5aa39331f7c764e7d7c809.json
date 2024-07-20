@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n              images.id               AS image_id,\n              images.name             AS image_name,\n              images.description      AS image_description,\n              images.filename         AS image_filename,\n              images.position         AS \"image_position!\",\n              images.hide_on_homepage AS \"image_hide_on_homepage!\",\n              categories.id           AS category_id,\n              categories.name         AS category_name,\n              categories.position     AS category_position\n            FROM images\n            LEFT OUTER JOIN category_images ON category_images.image_id = images.id\n            LEFT OUTER JOIN categories ON category_images.category_id = categories.id\n            ORDER BY images.position ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "image_id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "image_name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "image_description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "image_filename",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "image_position!",
+        "ordinal": 4,
+        "type_info": "Int64"
+      },
+      {
+        "name": "image_hide_on_homepage!",
+        "ordinal": 5,
+        "type_info": "Int64"
+      },
+      {
+        "name": "category_id",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "category_name",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "category_position",
+        "ordinal": 8,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "5e52db3adfae833ee02f36bfbf22d4a84f49355aff5aa39331f7c764e7d7c809"
+}

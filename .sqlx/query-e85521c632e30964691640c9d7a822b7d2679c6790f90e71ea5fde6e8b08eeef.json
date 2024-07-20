@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO faqs (question, answer) VALUES (?1, ?2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "e85521c632e30964691640c9d7a822b7d2679c6790f90e71ea5fde6e8b08eeef"
+}

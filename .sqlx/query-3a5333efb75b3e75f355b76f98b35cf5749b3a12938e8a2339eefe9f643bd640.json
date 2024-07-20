@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                    id,\n                    position AS \"position!\"\n                FROM images\n                WHERE position < ?1\n                ORDER BY images.position DESC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "position!",
+        "ordinal": 1,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "3a5333efb75b3e75f355b76f98b35cf5749b3a12938e8a2339eefe9f643bd640"
+}

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT about_text FROM about\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "about_text",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "07fb7ece5935da74e2dd5c11dd29e3df81930a437c254eda89291ddc540c033f"
+}

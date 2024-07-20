@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                    id,\n                    position AS \"position!\"\n                FROM faqs\n                WHERE position > ?1\n                ORDER BY faqs.position ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "position!",
+        "ordinal": 1,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "706179b57ee0b229337a4304f7b07d9ac79a429ac999d91c6f8a0eb3b5a243e9"
+}
