@@ -4,6 +4,7 @@ use axum::{
     response::{Html, IntoResponse, Redirect},
     Extension,
 };
+use image::ImageFormat;
 use tera::{Context, Tera};
 use uuid::Uuid;
 
@@ -129,14 +130,20 @@ pub async fn post_image(
             .await
             .map_err(|e| e.into())?;
 
-        let uploaded_ext = image_upload.img_name.to_lowercase();
-
-        let ext = if uploaded_ext.ends_with("png") {
-            ".png"
-        } else if uploaded_ext.ends_with("jpg") || uploaded_ext.ends_with("jpeg") {
-            ".jpg"
-        } else {
-            ""
+        // Check the file contents rather than trusting the uploaded filename
+        let ext = match image::guess_format(&image_upload.img) {
+            Ok(ImageFormat::Png) => ".png",
+            Ok(ImageFormat::Jpeg) => ".jpg",
+            _ => {
+                tracing::error!(
+                    "Rejected upload with unsupported format: {}",
+                    image_upload.img_name
+                );
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    "Only PNG and JPEG images are supported".into(),
+                ));
+            }
         };
 
         let mut filename = Uuid::new_v4().to_string();
