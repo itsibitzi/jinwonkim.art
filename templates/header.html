@@ -8,7 +8,9 @@
         <a {% if current_page==category.id %} data-selected {% endif %}
             href="/categories/{{category.id}}">{{category.name}}</a> |
         {% endfor %}
+        {% if has_faqs %}
         <a {% if current_page=="faq" %} data-selected {% endif %} href="/faq">FAQ</a> |
+        {% endif %}
         <a {% if current_page=="about" %} data-selected {% endif %} href="/about">About</a>
     </nav>
 </header>
